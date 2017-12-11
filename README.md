@@ -24,11 +24,19 @@ The project was born out of admiration for / frustration with [OpenAI Universe](
 
 Guides, tutorials and videos are being produced and added to the [GitHub Wiki](https://github.com/SerpentAI/SerpentAI/wiki). It currently is the official source of documentation.
 
+## Getting Help
+
+If you encounter a problem you believe is on Serpent.AI's end, you are encouraged to create a GitHub [issue](https://github.com/SerpentAI/SerpentAI/issues/new). If you do so, please make sure to provide as much context as possible. You can also ask your questions and get help from the community on [Discord](https://discord.gg/9D5SuxH) in the *#serpent-ai-help* public channel.
+
+## Showcasing your Work
+
+Have you built something cool using Serpent.AI? Want to give the community progress updates? Share your repositories and videos in *#serpent-ai-showcase* on [Discord](https://discord.gg/9D5SuxH). There is also a [wiki page](https://github.com/SerpentAI/SerpentAI/wiki/Community-Plugin-Showcase) reserved for showcasing your plugins!
+
 ![](https://s3.ca-central-1.amazonaws.com/serpent-ai-assets/demo_ymbab.gif)
 
 _Experiment: Game agent learning to match tiles (You Must Build a Boat)_
 
-Serpent.AI is currently in BETA. It it the love child of [@nbrochu](https://github.com/nbrochu)'s passion for science & experimentation, programming and video games. All of development and experiments can be seen live on the [Twitch Channel](https://www.twitch.tv/serpent_ai).
+Serpent.AI is currently in BETA. It is the love child of [@nbrochu](https://github.com/nbrochu)'s passion for science & experimentation, programming and video games. All of development and experiments can be seen live on the [Twitch Channel](https://www.twitch.tv/serpent_ai).
 
 _Business Contact: info@serpent.ai_
 

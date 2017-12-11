@@ -12,10 +12,13 @@ class LinuxWindowController(WindowController):
         pass
 
     def locate_window(self, name):
-        return subprocess.check_output(shlex.split(f"xdotool search --name \"^{name}$\"")).decode("utf-8").strip()
+        return subprocess.check_output(shlex.split(f"xdotool search --onlyvisible --name \"^{name}$\"")).decode("utf-8").strip()
 
     def move_window(self, window_id, x, y):
         subprocess.call(shlex.split(f"xdotool windowmove {window_id} {x} {y}"))
+
+    def resize_window(self, window_id, width, height):
+        subprocess.call(shlex.split(f"xdotool windowsize {window_id} {width} {height}"))
 
     def focus_window(self, window_id):
         subprocess.call(shlex.split(f"xdotool windowactivate {window_id}"))
@@ -23,6 +26,10 @@ class LinuxWindowController(WindowController):
     def is_window_focused(self, window_id):
         focused_window_id = subprocess.check_output(shlex.split("xdotool getwindowfocus")).decode("utf-8").strip()
         return focused_window_id == window_id
+
+    def get_focused_window_name(self):
+        focused_window_id = subprocess.check_output(shlex.split("xdotool getwindowfocus")).decode("utf-8").strip()
+        return subprocess.check_output(shlex.split(f"xdotool getwindowname {focused_window_id}")).decode("utf-8").strip()
 
     def get_window_geometry(self, window_id):
         geometry = dict()

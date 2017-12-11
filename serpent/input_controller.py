@@ -1,176 +1,347 @@
-from serpent.sprite_locator import SpriteLocator
-
-import serpent.ocr
-
-import pyautogui
-
 import enum
-
-import time
 
 
 class MouseButton(enum.Enum):
-    LEFT = 0
-    MIDDLE = 1
-    RIGHT = 2
+    LEFT = "LEFT"
+    MIDDLE = "MIDDLE"
+    RIGHT = "RIGHT"
+
+
+class KeyboardKey(enum.Enum):
+    """Supporting the 104 de facto standard PC keyboard keys"""
+
+    KEY_ESCAPE = "KEY_ESCAPE"
+    KEY_F1 = "KEY_F1"
+    KEY_F2 = "KEY_F2"
+    KEY_F3 = "KEY_F3"
+    KEY_F4 = "KEY_F4"
+    KEY_F5 = "KEY_F5"
+    KEY_F6 = "KEY_F6"
+    KEY_F7 = "KEY_F7"
+    KEY_F8 = "KEY_F8"
+    KEY_F9 = "KEY_F9"
+    KEY_F10 = "KEY_F10"
+    KEY_F11 = "KEY_F11"
+    KEY_F12 = "KEY_F12"
+    KEY_PRINT_SCREEN = "KEY_PRINT_SCREEN"
+    KEY_SCROLL_LOCK = "KEY_SCROLL_LOCK"
+    KEY_PAUSE = "KEY_PAUSE"
+
+    KEY_GRAVE = "KEY_GRAVE"
+    KEY_BACKTICK = KEY_GRAVE
+    KEY_1 = "KEY_1"
+    KEY_2 = "KEY_2"
+    KEY_3 = "KEY_3"
+    KEY_4 = "KEY_4"
+    KEY_5 = "KEY_5"
+    KEY_6 = "KEY_6"
+    KEY_7 = "KEY_7"
+    KEY_8 = "KEY_8"
+    KEY_9 = "KEY_9"
+    KEY_0 = "KEY_0"
+    KEY_MINUS = "KEY_MINUS"
+    KEY_DASH = KEY_MINUS
+    KEY_EQUALS = "KEY_EQUALS"
+    KEY_BACKSPACE = "KEY_BACKSPACE"
+    KEY_INSERT = "KEY_INSERT"
+    KEY_HOME = "KEY_HOME"
+    KEY_PAGE_UP = "KEY_PAGE_UP"
+    KEY_NUMLOCK = "KEY_NUMLOCK"
+    KEY_NUMPAD_DIVIDE = "KEY_NUMPAD_DIVIDE"
+    KEY_NUMPAD_SLASH = KEY_NUMPAD_DIVIDE
+    KEY_NUMPAD_MULTIPLY = "KEY_NUMPAD_MULTIPLY"
+    KEY_NUMPAD_STAR = KEY_NUMPAD_MULTIPLY
+    KEY_NUMPAD_SUBTRACT = "KEY_NUMPAD_SUBTRACT"
+    KEY_NUMPAD_DASH = KEY_NUMPAD_SUBTRACT
+
+    KEY_TAB = "KEY_TAB"
+    KEY_Q = "KEY_Q"
+    KEY_W = "KEY_W"
+    KEY_E = "KEY_E"
+    KEY_R = "KEY_R"
+    KEY_T = "KEY_T"
+    KEY_Y = "KEY_Y"
+    KEY_U = "KEY_U"
+    KEY_I = "KEY_I"
+    KEY_O = "KEY_O"
+    KEY_P = "KEY_P"
+    KEY_LEFT_BRACKET = "KEY_LEFT_BRACKET"
+    KEY_RIGHT_BRACKET = "KEY_RIGHT_BRACKET"
+    KEY_BACKSLASH = "KEY_BACKSLASH"
+    KEY_DELETE = "KEY_DELETE"
+    KEY_END = "KEY_END"
+    KEY_PAGE_DOWN = "KEY_PAGE_DOWN"
+    KEY_NUMPAD_7 = "KEY_NUMPAD_7"
+    KEY_NUMPAD_8 = "KEY_NUMPAD_8"
+    KEY_NUMPAD_9 = "KEY_NUMPAD_9"
+    KEY_NUMPAD_ADD = "KEY_NUMPAD_ADD"
+    KEY_NUMPAD_PLUS = KEY_NUMPAD_ADD
+
+    KEY_CAPSLOCK = "KEY_CAPSLOCK"
+    KEY_A = "KEY_A"
+    KEY_S = "KEY_S"
+    KEY_D = "KEY_D"
+    KEY_F = "KEY_F"
+    KEY_G = "KEY_G"
+    KEY_H = "KEY_H"
+    KEY_J = "KEY_J"
+    KEY_K = "KEY_K"
+    KEY_L = "KEY_L"
+    KEY_SEMICOLON = "KEY_SEMICOLON"
+    KEY_APOSTROPHE = "KEY_APOSTROPHE"
+    KEY_RETURN = "KEY_RETURN"
+    KEY_ENTER = KEY_RETURN
+    KEY_NUMPAD_4 = "KEY_NUMPAD_4"
+    KEY_NUMPAD_5 = "KEY_NUMPAD_5"
+    KEY_NUMPAD_6 = "KEY_NUMPAD_6"
+
+    KEY_LEFT_SHIFT = "KEY_LEFT_SHIFT"
+    KEY_Z = "KEY_Z"
+    KEY_X = "KEY_X"
+    KEY_C = "KEY_C"
+    KEY_V = "KEY_V"
+    KEY_B = "KEY_B"
+    KEY_N = "KEY_N"
+    KEY_M = "KEY_M"
+    KEY_COMMA = "KEY_COMMA"
+    KEY_PERIOD = "KEY_PERIOD"
+    KEY_SLASH = "KEY_SLASH"
+    KEY_RIGHT_SHIFT = "KEY_RIGHT_SHIFT"
+    KEY_UP = "KEY_UP"
+    KEY_NUMPAD_1 = "KEY_NUMPAD_1"
+    KEY_NUMPAD_2 = "KEY_NUMPAD_2"
+    KEY_NUMPAD_3 = "KEY_NUMPAD_3"
+    KEY_NUMPAD_RETURN = "KEY_NUMPAD_RETURN"
+    KEY_NUMPAD_ENTER = KEY_NUMPAD_RETURN
+
+    KEY_LEFT_CTRL = "KEY_LEFT_CTRL"
+    KEY_LEFT_SUPER = "KEY_LEFT_SUPER"
+    KEY_LEFT_WINDOWS = KEY_LEFT_SUPER
+    KEY_LEFT_ALT = "KEY_LEFT_ALT"
+    KEY_SPACE = "KEY_SPACE"
+    KEY_RIGHT_ALT = "KEY_RIGHT_ALT"
+    KEY_RIGHT_SUPER = "KEY_RIGHT_SUPER"
+    KEY_RIGHT_WINDOWS = KEY_RIGHT_SUPER
+    KEY_APP_MENU = "KEY_APP_MENU"
+    KEY_RIGHT_CTRL = "KEY_RIGHT_CTRL"
+    KEY_LEFT = "KEY_LEFT"
+    KEY_DOWN = "KEY_DOWN"
+    KEY_RIGHT = "KEY_RIGHT"
+    KEY_NUMPAD_0 = "KEY_NUMPAD_0"
+    KEY_NUMPAD_DECIMAL = "KEY_NUMPAD_DECIMAL"
+    KEY_NUMPAD_PERIOD = KEY_NUMPAD_DECIMAL
+
+    # macOS
+    KEY_COMMAND = "KEY_COMMAND"
+
+
+# US layout - What's to be done for other keyboard layouts?
+character_keyboard_key_mapping = {
+    "`": [KeyboardKey.KEY_GRAVE],
+    "~": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_GRAVE],
+    "1": [KeyboardKey.KEY_1],
+    "!": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_1],
+    "2": [KeyboardKey.KEY_2],
+    "@": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_2],
+    "3": [KeyboardKey.KEY_3],
+    "#": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_3],
+    "4": [KeyboardKey.KEY_4],
+    "$": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_4],
+    "5": [KeyboardKey.KEY_5],
+    "%": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_5],
+    "6": [KeyboardKey.KEY_6],
+    "^": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_6],
+    "7": [KeyboardKey.KEY_7],
+    "&": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_7],
+    "8": [KeyboardKey.KEY_8],
+    "*": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_8],
+    "9": [KeyboardKey.KEY_9],
+    "(": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_9],
+    "0": [KeyboardKey.KEY_0],
+    ")": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_0],
+    "-": [KeyboardKey.KEY_MINUS],
+    "_": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_MINUS],
+    "=": [KeyboardKey.KEY_EQUALS],
+    "+": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_EQUALS],
+    "q": [KeyboardKey.KEY_Q],
+    "Q": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_Q],
+    "w": [KeyboardKey.KEY_W],
+    "W": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_W],
+    "e": [KeyboardKey.KEY_E],
+    "E": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_E],
+    "r": [KeyboardKey.KEY_R],
+    "R": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_R],
+    "t": [KeyboardKey.KEY_T],
+    "T": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_T],
+    "y": [KeyboardKey.KEY_Y],
+    "Y": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_Y],
+    "u": [KeyboardKey.KEY_U],
+    "U": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_U],
+    "i": [KeyboardKey.KEY_I],
+    "I": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_I],
+    "o": [KeyboardKey.KEY_O],
+    "O": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_O],
+    "p": [KeyboardKey.KEY_P],
+    "P": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_P],
+    "[": [KeyboardKey.KEY_LEFT_BRACKET],
+    "{": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_LEFT_BRACKET],
+    "]": [KeyboardKey.KEY_RIGHT_BRACKET],
+    "}": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_RIGHT_BRACKET],
+    "\n": [KeyboardKey.KEY_RETURN],
+    "a": [KeyboardKey.KEY_A],
+    "A": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_A],
+    "s": [KeyboardKey.KEY_S],
+    "S": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_S],
+    "d": [KeyboardKey.KEY_D],
+    "D": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_D],
+    "f": [KeyboardKey.KEY_F],
+    "F": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_F],
+    "g": [KeyboardKey.KEY_G],
+    "G": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_G],
+    "h": [KeyboardKey.KEY_H],
+    "H": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_H],
+    "j": [KeyboardKey.KEY_J],
+    "J": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_J],
+    "k": [KeyboardKey.KEY_K],
+    "K": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_K],
+    "l": [KeyboardKey.KEY_L],
+    "L": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_L],
+    ";": [KeyboardKey.KEY_SEMICOLON],
+    ":": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_SEMICOLON],
+    "'": [KeyboardKey.KEY_APOSTROPHE],
+    '"': [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_APOSTROPHE],
+    "z": [KeyboardKey.KEY_Z],
+    "Z": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_Z],
+    "x": [KeyboardKey.KEY_X],
+    "X": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_X],
+    "c": [KeyboardKey.KEY_C],
+    "C": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_C],
+    "v": [KeyboardKey.KEY_V],
+    "V": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_V],
+    "b": [KeyboardKey.KEY_B],
+    "B": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_B],
+    "n": [KeyboardKey.KEY_N],
+    "N": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_N],
+    "m": [KeyboardKey.KEY_M],
+    "M": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_M],
+    ",": [KeyboardKey.KEY_COMMA],
+    "<": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_COMMA],
+    ".": [KeyboardKey.KEY_PERIOD],
+    ">": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_PERIOD],
+    "/": [KeyboardKey.KEY_SLASH],
+    "?": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_SLASH],
+    "\\": [KeyboardKey.KEY_BACKSLASH],
+    "|": [KeyboardKey.KEY_LEFT_SHIFT, KeyboardKey.KEY_BACKSLASH],
+    " ": [KeyboardKey.KEY_SPACE]
+}
+
+
+class InputControllers(enum.Enum):
+    PYAUTOGUI = 0
+    NATIVE_WIN32 = 1
+
+
+class InputControllerError(BaseException):
+    pass
 
 
 class InputController:
 
-    def __init__(self, game=None):
+    def __init__(self, backend=InputControllers.PYAUTOGUI, game=None, **kwargs):
         self.game = game
-
-        self.mouse_buttons = {
-            MouseButton.LEFT.name: "left",
-            MouseButton.MIDDLE.name: "middle",
-            MouseButton.RIGHT.name: "right"
-        }
-
-        self.previous_key_collection_set = set()
-
-        self.sprite_locator = SpriteLocator()
+        self.backend = self._initialize_backend(backend, **kwargs)
 
     @property
     def game_is_focused(self):
         return self.game.is_focused
 
     # Keyboard Actions
-    def handle_keys(self, key_collection):
-        key_collection_set = set(key_collection)
+    def handle_keys(self, key_collection, **kwargs):
+        self._is_game_launched_check()
+        self.backend.handle_keys(key_collection, **kwargs)
 
-        keys_to_press = key_collection_set - self.previous_key_collection_set
-        keys_to_release = self.previous_key_collection_set - key_collection_set
+    def tap_keys(self, keys, duration=0.05, **kwargs):
+        self._is_game_launched_check()
+        self.backend.tap_keys(keys, duration=duration, **kwargs)
 
-        for key in keys_to_press:
-            self.press_key(key)
+    def tap_key(self, key, duration=0.05, **kwargs):
+        self._is_game_launched_check()
+        self.backend.tap_key(key, duration=duration, **kwargs)
 
-        for key in keys_to_release:
-            self.release_key(key)
+    def press_keys(self, keys, **kwargs):
+        self._is_game_launched_check()
+        self.backend.press_keys(keys, **kwargs)
 
-        self.previous_key_collection_set = key_collection_set
+    def press_key(self, key, **kwargs):
+        self._is_game_launched_check()
+        self.backend.press_key(key, **kwargs)
 
-    def tap_keys(self, keys, duration=0.05):
-        if self.game_is_focused:
-            for key in keys:
-                pyautogui.keyDown(key)
+    def release_keys(self, keys, **kwargs):
+        self._is_game_launched_check()
+        self.backend.release_keys(keys, **kwargs)
 
-            time.sleep(duration)
+    def release_key(self, key, **kwargs):
+        self._is_game_launched_check()
+        self.backend.release_key(key, **kwargs)
 
-            for key in keys:
-                pyautogui.keyUp(key)
-
-    def tap_key(self, key, duration=0.05):
-        if self.game_is_focused:
-            pyautogui.keyDown(key)
-
-            time.sleep(duration)
-
-            pyautogui.keyUp(key)
-
-    def press_keys(self, keys):
-        for key in keys:
-            self.press_key(key)
-
-    def press_key(self, key):
-        if self.game_is_focused:
-            pyautogui.keyDown(key)
-
-    def release_keys(self):
-        for key in self.previous_key_collection_set:
-            self.release_key(key)
-
-        self.previous_key_collection_set = set()
-
-    def release_key(self, key):
-        if self.game_is_focused:
-            pyautogui.keyUp(key)
-
-    def type_string(self, string, duration=0.05):
-        if self.game_is_focused:
-            pyautogui.typewrite(message=string, interval=duration)
+    def type_string(self, string, duration=0.05, **kwargs):
+        self._is_game_launched_check()
+        self.backend.type_string(string, duration=duration, **kwargs)
 
     # Mouse Actions
-    def click(self, button=MouseButton.LEFT, y=None, x=None, duration=0.25):
-        if self.game_is_focused:
-            pyautogui.moveTo(x, y, duration=duration)
-            pyautogui.click(button=self.mouse_buttons.get(button.name, "left"))
+    def move(self, x=None, y=None, duration=0.25, absolute=True, **kwargs):
+        self._is_game_launched_check()
+        self.backend.move(x=x, y=y, duration=duration, absolute=absolute, **kwargs)
 
-    def click_screen_region(self, button=MouseButton.LEFT, screen_region=None):
-        if self.game_is_focused:
-            screen_region_coordinates = self.game.screen_regions.get(screen_region)
+    def click_down(self, button=MouseButton.LEFT, **kwargs):
+        self._is_game_launched_check()
+        self.backend.click_down(button=button, **kwargs)
 
-            x = (screen_region_coordinates[1] + screen_region_coordinates[3]) // 2
-            x += self.game.window_geometry["x_offset"]
+    def click_up(self, button=MouseButton.LEFT, **kwargs):
+        self._is_game_launched_check()
+        self.backend.click_up(button=button, **kwargs)
 
-            y = (screen_region_coordinates[0] + screen_region_coordinates[2]) // 2
-            y += self.game.window_geometry["y_offset"]
+    def click(self, button=MouseButton.LEFT, duration=0.25, **kwargs):
+        self._is_game_launched_check()
+        self.backend.click(button=button, duration=duration, **kwargs)
 
-            self.click(button=button, y=y, x=x)
+    def click_screen_region(self, button=MouseButton.LEFT, screen_region=None, **kwargs):
+        self._is_game_launched_check()
+        self.backend.click_screen_region(button=button, screen_region=screen_region, **kwargs)
 
-    def click_sprite(self, button=MouseButton.LEFT, sprite=None, game_frame=None):
-        if self.game_is_focused:
-            sprite_location = self.sprite_locator.locate(sprite=sprite, game_frame=game_frame)
+    def click_sprite(self, button=MouseButton.LEFT, sprite=None, game_frame=None, **kwargs):
+        self._is_game_launched_check()
+        self.backend.click_sprite(button=button, sprite=sprite, game_frame=game_frame, **kwargs)
 
-            if sprite_location is None:
-                return False
+    def click_string(self, query_string, button=MouseButton.LEFT, game_frame=None, fuzziness=2, ocr_preset=None, **kwargs):
+        self._is_game_launched_check()
+        self.backend.click_string(query_string, button=button, game_frame=game_frame, fuzziness=fuzziness, ocr_preset=ocr_preset, **kwargs)
 
-            x = (sprite_location[1] + sprite_location[3]) // 2
-            x += self.game.window_geometry["x_offset"]
+    def drag(self, button=MouseButton.LEFT, x0=None, y0=None, x1=None, y1=None, duration=1, **kwargs):
+        self._is_game_launched_check()
+        self.backend.drag(button=button, x0=x0, y0=y0, x1=x1, y1=y1, duration=duration, **kwargs)
 
-            y = (sprite_location[0] + sprite_location[2]) // 2
-            y += self.game.window_geometry["y_offset"]
+    def drag_screen_region_to_screen_region(self, button=MouseButton.LEFT, start_screen_region=None, end_screen_region=None, duration=1, **kwargs):
+        self._is_game_launched_check()
+        self.backend.drag_screen_region_to_screen_region(button=button, start_screen_region=start_screen_region, end_screen_region=end_screen_region, duration=duration, **kwargs)
 
-            self.click(button=button, y=y, x=x)
+    def scroll(self, x=None, y=None, clicks=1, direction="DOWN", **kwargs):
+        self._is_game_launched_check()
+        self.backend.scroll(x=x, y=y, clicks=clicks, direction=direction, **kwargs)
 
-            return True
+    def _initialize_backend(self, backend, **kwargs):
+        if backend == InputControllers.PYAUTOGUI:
+            from serpent.input_controllers.pyautogui_input_controller import PyAutoGUIInputController
+            return PyAutoGUIInputController(game=self.game, **kwargs)
+        elif backend == InputControllers.NATIVE_WIN32:
+            from serpent.input_controllers.native_win32_input_controller import NativeWin32InputController
+            return NativeWin32InputController(game=self.game, **kwargs)
+        else:
+            raise InputControllerError("The specified backend is invalid!")
 
-    def click_string(self, query_string, button=MouseButton.LEFT, game_frame=None, fuzziness=2, ocr_preset=None):
-        if self.game_is_focused:
-            string_location = serpent.ocr.locate_string(
-                query_string,
-                game_frame.frame,
-                fuzziness=fuzziness,
-                ocr_preset=ocr_preset,
-                offset_x=game_frame.offset_x,
-                offset_y=game_frame.offset_y
-            )
-
-            if string_location is not None:
-                x = (string_location[1] + string_location[3]) // 2
-                x += self.game.window_geometry["x_offset"]
-
-                y = (string_location[0] + string_location[2]) // 2
-                y += self.game.window_geometry["y_offset"]
-
-                self.click(button=button, y=y, x=x)
-
-                return True
-
-            return False
-
-    def drag(self, button=MouseButton.LEFT, x0=None, y0=None, x1=None, y1=None, duration=1):
-        if self.game_is_focused:
-            pyautogui.moveTo(x0, y0, duration=0.2)
-            pyautogui.dragTo(x1, y1, button=button, duration=duration)
-
-    def drag_screen_region_to_screen_region(self, button=MouseButton.LEFT, start_screen_region=None, end_screen_region=None, duration=1):
-        if self.game_is_focused:
-            start_screen_region_coordinates = self._extract_screen_region_coordinates(start_screen_region)
-            end_screen_region_coordinates = self._extract_screen_region_coordinates(end_screen_region)
-
-            self.drag(
-                button=button,
-                x0=start_screen_region_coordinates[0],
-                y0=start_screen_region_coordinates[1],
-                x1=end_screen_region_coordinates[0],
-                y1=end_screen_region_coordinates[1],
-                duration=duration
-            )
-
-    def scroll(self, y=None, x=None, clicks=1, direction="DOWN"):
-        if self.game_is_focused:
-            clicks = clicks * (1 if direction == "DOWN" else -1)
-            pyautogui.scroll(clicks, x=x, y=y)
+    def _is_game_launched_check(self):
+        if not self.game.is_launched:
+            raise InputControllerError("InputController cannot be used while the game is not running!")
 
     def _extract_screen_region_coordinates(self, screen_region):
         screen_region_coordinates = self.game.screen_regions.get(screen_region)

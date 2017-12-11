@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 from setuptools import setup
 
-import os
-
 try:
     import pypandoc
     long_description = pypandoc.convert('README.md', 'rst')
@@ -14,6 +12,7 @@ packages = [
     "serpent.game_agents",
     "serpent.game_launchers",
     "serpent.games",
+    "serpent.input_controllers",
     "serpent.machine_learning",
     "serpent.machine_learning.context_classification",
     "serpent.machine_learning.context_classification.context_classifiers",
@@ -71,12 +70,12 @@ data_files = [
 
 requires = [
     "offshoot",
-    "Cython"
+    "Cython==0.26.1"
 ]
 
 setup(
     name='SerpentAI',
-    version="0.1.0b1",
+    version="0.1.12b1",
     description='Game Agent Development Kit. Helping you create AIs / Bots to play any game you own!',
     long_description=long_description,
     author="Nicholas Brochu",

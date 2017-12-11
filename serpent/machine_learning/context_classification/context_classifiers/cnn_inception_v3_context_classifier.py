@@ -4,6 +4,7 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.applications.inception_v3 import InceptionV3, preprocess_input
 from keras.layers import Dense, GlobalAveragePooling2D
 from keras.models import Model, load_model
+from keras.callbacks import ModelCheckpoint
 
 import skimage.transform
 
@@ -21,8 +22,8 @@ class CNNInceptionV3ContextClassifier(ContextClassifier):
         self.training_generator = None
         self.validation_generator = None
 
-    def train(self, epochs=3):
-        if self.training_generator is None or self.validation_generator is None:
+    def train(self, epochs=3, autosave=False, validate=True):
+        if validate and (self.training_generator is None or self.validation_generator is None):
             self.prepare_generators()
 
         base_model = InceptionV3(
@@ -47,13 +48,27 @@ class CNNInceptionV3ContextClassifier(ContextClassifier):
             metrics=["accuracy"]
         )
 
+        callbacks = []
+
+        if autosave:
+            callbacks.append(ModelCheckpoint(
+                "datasets/context_classifier_{epoch:02d}-{val_loss:.2f}.model",
+                monitor='val_loss',
+                verbose=0,
+                save_best_only=False,
+                save_weights_only=False,
+                mode='auto',
+                period=1
+            ))
+
         self.classifier.fit_generator(
             self.training_generator,
             samples_per_epoch=self.training_sample_count,
             nb_epoch=epochs,
             validation_data=self.validation_generator,
             nb_val_samples=self.validation_sample_count,
-            class_weight="auto"
+            class_weight="auto",
+            callbacks=callbacks
         )
 
     def validate(self):
@@ -69,7 +84,7 @@ class CNNInceptionV3ContextClassifier(ContextClassifier):
             order=0
         )
 
-        resized_input_frame = np.array(serpent.cv.scale_range(resized_input_frame, -1, 1), dtype="float32")
+        resized_input_frame = np.array(serpent.cv.normalize(resized_input_frame, 0, 1, target_min=-1, target_max=1), dtype="float32")
 
         class_mapping = self.training_generator.class_indices
         class_probabilities = self.classifier.predict(resized_input_frame[None, :, :, :])[0]

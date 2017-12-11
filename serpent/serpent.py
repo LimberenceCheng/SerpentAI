@@ -4,18 +4,18 @@ import sys
 import shutil
 import subprocess
 import shlex
+import time
 
 import offshoot
 
 from serpent.utilities import clear_terminal, display_serpent_logo
 
+from serpent.window_controller import WindowController
+
 # Add the current working directory to sys.path to discover user plugins!
 sys.path.insert(0, os.getcwd())
 
-game_class_mapping = offshoot.discover("Game")
-game_agent_class_mapping = offshoot.discover("GameAgent")
-
-VERSION = "0.1.0b1"
+VERSION = "0.1.12b1"
 
 valid_commands = [
     "setup",
@@ -28,7 +28,8 @@ valid_commands = [
     "plugins",
     "train",
     "capture",
-    "visual_debugger"
+    "visual_debugger",
+    "window_name"
 ]
 
 
@@ -144,7 +145,7 @@ def setup():
         subprocess.call(shlex.split("pip install python-xlib pyobjc-framework-Quartz py-applescript"))
     elif sys.platform == "win32":
         # Anaconda Packages
-        subprocess.call(shlex.split("conda install numpy scipy scikit-image scikit-learn h5py -y"))
+        subprocess.call(shlex.split("conda install numpy scipy scikit-image scikit-learn h5py -y"), shell=True)
 
         # Kivy Dependencies
         subprocess.call(shlex.split("pip install docutils pygments pypiwin32 kivy.deps.sdl2 kivy.deps.glew"))
@@ -157,14 +158,15 @@ def setup():
     os.makedirs(os.path.join(os.getcwd(), "datasets/current"), exist_ok=True)
 
 
-def grab_frames(width, height, x_offset, y_offset):
+def grab_frames(width, height, x_offset, y_offset, pipeline_string=None):
     from serpent.frame_grabber import FrameGrabber
 
     frame_grabber = FrameGrabber(
         width=int(width),
         height=int(height),
         x_offset=int(x_offset),
-        y_offset=int(y_offset)
+        y_offset=int(y_offset),
+        pipeline_string=pipeline_string
     )
 
     frame_grabber.start()
@@ -206,6 +208,7 @@ def plugins():
 def launch(game_name):
     game_class_name = f"Serpent{game_name}Game"
 
+    game_class_mapping = offshoot.discover("Game")
     game = game_class_mapping.get(game_class_name)
 
     if game is None:
@@ -217,6 +220,7 @@ def launch(game_name):
 def play(game_name, game_agent_name, frame_handler=None):
     game_class_name = f"Serpent{game_name}Game"
 
+    game_class_mapping = offshoot.discover("Game")
     game_class = game_class_mapping.get(game_class_name)
 
     if game_class is None:
@@ -225,6 +229,7 @@ def play(game_name, game_agent_name, frame_handler=None):
     game = game_class()
     game.launch(dry_run=True)
 
+    game_agent_class_mapping = offshoot.discover("GameAgent")
     game_agent_class = game_agent_class_mapping.get(game_agent_name)
 
     if game_agent_class is None:
@@ -250,6 +255,7 @@ def train(training_type, *args):
 def capture(capture_type, game_name, interval=1, extra=None):
     game_class_name = f"Serpent{game_name}Game"
 
+    game_class_mapping = offshoot.discover("Game")
     game_class = game_class_mapping.get(game_class_name)
 
     if game_class is None:
@@ -275,18 +281,34 @@ def visual_debugger(*buckets):
     VisualDebuggerApp(buckets=buckets or None).run()
 
 
+def window_name():
+    clear_terminal()
+    print("Open the Game manually.")
+
+    input("\nPress ANY key and then focus the game window...")
+
+    window_controller = WindowController()
+
+    time.sleep(5)
+
+    focused_window_name = window_controller.get_focused_window_name()
+
+    print(f"\nGame Window Detected! Please set the kwargs['window_name'] value in the Game plugin to:")
+    print("\n" + focused_window_name + "\n")
+
+
 def generate_game_plugin():
     clear_terminal()
     display_serpent_logo()
     print("")
 
     game_name = input("What is the name of the game? (Titleized, No Spaces i.e. AwesomeGame): \n")
-    game_platform = input("How is the game launched? (One of: 'steam', 'executable'): \n")
+    game_platform = input("How is the game launched? (One of: 'steam', 'executable', 'web_browser'): \n")
 
     if game_name in [None, ""]:
         raise Exception("Invalid game name.")
 
-    if game_platform not in ["steam", "executable"]:
+    if game_platform not in ["steam", "executable", "web_browser"]:
         raise Exception("Invalid game platform.")
 
     prepare_game_plugin(game_name, game_platform)
@@ -338,11 +360,25 @@ def prepare_game_plugin(game_name, game_platform):
 
     if game_platform == "steam":
         contents = contents.replace("PLATFORM", "steam")
+
+        contents = contents.replace("from serpent.game_launchers.web_browser_game_launcher import WebBrowser", "")
         contents = contents.replace('kwargs["executable_path"] = "EXECUTABLE_PATH"', "")
+        contents = contents.replace('kwargs["url"] = "URL"', "")
+        contents = contents.replace('kwargs["browser"] = WebBrowser.DEFAULT', "")
     elif game_platform == "executable":
         contents = contents.replace("PLATFORM", "executable")
+
+        contents = contents.replace("from serpent.game_launchers.web_browser_game_launcher import WebBrowser", "")
         contents = contents.replace('kwargs["app_id"] = "APP_ID"', "")
-        contents = contents.replace('kwargs["app_args"] = "APP_ARGS"', "")
+        contents = contents.replace('kwargs["app_args"] = None', "")
+        contents = contents.replace('kwargs["url"] = "URL"', "")
+        contents = contents.replace('kwargs["browser"] = WebBrowser.DEFAULT', "")
+    elif game_platform == "web_browser":
+        contents = contents.replace("PLATFORM", "web_browser")
+
+        contents = contents.replace('kwargs["app_id"] = "APP_ID"', "")
+        contents = contents.replace('kwargs["app_args"] = None', "")
+        contents = contents.replace('kwargs["executable_path"] = "EXECUTABLE_PATH"', "")
 
     with open(f"{plugin_destination_path}/files/serpent_{game_name}_game.py".replace("/", os.sep), "w") as f:
         f.write(contents)
@@ -385,9 +421,20 @@ def prepare_game_agent_plugin(game_agent_name):
         f.write(contents)
 
 
-def train_context(epochs=3):
+def train_context(epochs=3, validate=True, autosave=False):
+    if validate not in [True, "True", False, "False"]:
+        raise ValueError("'validate' should be True or False")
+
+    if autosave not in [True, "True", False, "False"]:
+        raise ValueError("'autosave' should be True or False")
+
     from serpent.machine_learning.context_classification.context_classifier import ContextClassifier
-    ContextClassifier.executable_train(epochs=int(epochs))
+    ContextClassifier.executable_train(epochs=int(epochs), validate=argv_is_true(validate), autosave=argv_is_true(autosave))
+
+
+def argv_is_true(arg):
+    return arg in [True, "True"]
+
 
 command_function_mapping = {
     "setup": setup,
@@ -400,7 +447,8 @@ command_function_mapping = {
     "generate": generate,
     "train": train,
     "capture": capture,
-    "visual_debugger": visual_debugger
+    "visual_debugger": visual_debugger,
+    "window_name": window_name
 }
 
 command_description_mapping = {
@@ -414,7 +462,8 @@ command_description_mapping = {
     "generate": "Generate code for game and game agent plugins",
     "train": "Train a context classifier with collected context frames",
     "capture": "Capture frames, screen regions and contexts from a game",
-    "visual_debugger": "Launch the visual debugger"
+    "visual_debugger": "Launch the visual debugger",
+    "window_name": "Launch a utility to find a game's window name"
 }
 
 if __name__ == "__main__":
